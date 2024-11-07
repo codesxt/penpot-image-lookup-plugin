@@ -1,10 +1,12 @@
-name: CI
+name: Github Pages Page Deploy
 
 on: [push]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:  
+      VITE_PEXELS_API_KEY: ${{ secrets.VITE_PEXELS_API_KEY }}
 
     steps:
       - name: 🛎️ Checkout code
@@ -20,8 +22,6 @@ jobs:
 
       - name: 🏗️ Build
         run: npm run build
-        env:  
-          VITE_PEXELS_API_KEY: ${{ secrets.VITE_PEXELS_API_KEY }}
 
       - name: 🚀 Deploy to GitHub Pages 🚀
         if: github.ref == 'refs/heads/main'
