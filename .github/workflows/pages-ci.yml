@@ -22,9 +22,9 @@ jobs:
         env:
           VITE_PEXELS_API_KEY: ${{ vars.VITE_PEXELS_API_KEY }}
         run: 
-          touch .env
-          echo "VITE_PEXELS_API_KEY=${{ vars.VITE_PEXELS_API_KEY }}" >> .env.production
-          ls -la
+          - touch .env
+          - echo "VITE_PEXELS_API_KEY=${{ vars.VITE_PEXELS_API_KEY }}" >> .env.production
+          - ls -la
 
       - name: 🏗️ Build
         run: VITE_PEXELS_API_KEY=${{ vars.VITE_PEXELS_API_KEY }} npm run build
