@@ -70,7 +70,7 @@ const searchMore = async () => {
 <template>
   <main :data-theme="theme()" class="wrapper">
     <div class="header">
-      <p class="title-m mb">Image Lookup TESTING</p>
+      <p class="title-m mb">Image Lookup</p>
       
       <p class="body-s mb">
         Photos provided by <a href="https://pexels.com" target="_blank">Pexels</a>

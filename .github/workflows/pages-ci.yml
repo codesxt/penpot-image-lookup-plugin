@@ -1,6 +1,10 @@
 name: Github Pages Page Deploy
 
-on: [push]
+
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
@@ -30,7 +34,7 @@ jobs:
         run: VITE_PEXELS_API_KEY=${{ vars.VITE_PEXELS_API_KEY }} npm run build
 
       - name: 🚀 Deploy to GitHub Pages 🚀
-        # if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
