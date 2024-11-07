@@ -21,10 +21,13 @@ jobs:
       - name: Setup env file
         env:
           VITE_PEXELS_API_KEY: ${{ vars.VITE_PEXELS_API_KEY }}
-        run: touch .env && echo "VITE_PEXELS_API_KEY=${{ vars.VITE_PEXELS_API_KEY }}" >> .env.production && ls -la
+        run: 
+          touch .env
+          echo "VITE_PEXELS_API_KEY=${{ vars.VITE_PEXELS_API_KEY }}" >> .env.production
+          ls -la
 
       - name: 🏗️ Build
-        run: npm run build
+        run: VITE_PEXELS_API_KEY=${{ vars.VITE_PEXELS_API_KEY }} npm run build
 
       - name: 🚀 Deploy to GitHub Pages 🚀
         if: github.ref == 'refs/heads/main'
