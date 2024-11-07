@@ -1,6 +1,5 @@
 name: Github Pages Page Deploy
 
-
 on:
   push:
     branches:
@@ -21,17 +20,11 @@ jobs:
 
       - name: 📥 Install dependencies
         run: npm install
-      
-      - name: Setup env file
-        env:
-          VITE_PEXELS_API_KEY: ${{ vars.VITE_PEXELS_API_KEY }}
-        run: |
-          touch .env
-          echo "VITE_PEXELS_API_KEY=${{ vars.VITE_PEXELS_API_KEY }}" >> .env.production
-          ls -la
 
       - name: 🏗️ Build
-        run: VITE_PEXELS_API_KEY=${{ vars.VITE_PEXELS_API_KEY }} npm run build
+        run: npm run build
+        env:
+          VITE_PEXELS_API_KEY: ${{ vars.VITE_PEXELS_API_KEY }}
 
       - name: 🚀 Deploy to GitHub Pages 🚀
         if: github.ref == 'refs/heads/main'
