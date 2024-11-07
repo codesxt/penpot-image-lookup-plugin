@@ -20,6 +20,8 @@ jobs:
 
       - name: 🏗️ Build
         run: npm run build
+        env:  
+          VITE_PEXELS_API_KEY: ${{ secrets.VITE_PEXELS_API_KEY }}
 
       - name: 🚀 Deploy to GitHub Pages 🚀
         if: github.ref == 'refs/heads/main'
