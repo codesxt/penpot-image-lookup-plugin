@@ -1,7 +1,13 @@
 {
-  "name": "Image Lookup Plugin for Penpot",
+  "name": "DEBUG Image Lookup Plugin for Penpot",
   "description": "Search free stock photos from Pexels.com.",
   "code": "/plugin.js",
   "icon": "/icon.png",
-  "permissions": ["page:read", "content:read", "file:read", "selection:read"]
+  "permissions": [
+    "page:read",
+    "content:read",
+    "content:write",
+    "file:read",
+    "selection:read"
+  ]
 }

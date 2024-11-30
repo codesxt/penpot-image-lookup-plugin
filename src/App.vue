@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted, watchEffect } from 'vue';
+import { ref, onMounted } from 'vue';
+import { isProxy, toRaw } from 'vue';
 import { signal } from 'vue-signals';
 
 const theme = signal<string | null>(null)
 const searchInput = ref('')
 const searchResult = ref('')
 const apiKey = import.meta.env.VITE_PEXELS_API_KEY
-const photos = ref([])
-const size = ref('medium')
+const photos = ref<any[]>([])
+const size = ref('large')
 const sizeOptions = ref([
   { key: 'original', name: 'Original' },
   { key: 'large2x', name: 'Large 2x'},
@@ -20,7 +21,7 @@ const sizeOptions = ref([
 ])
 
 const page = ref(1)
-const perPage = ref(10)
+const perPage = ref(20)
 const totalResults = ref(0)
 
 onMounted(() => {
@@ -40,7 +41,9 @@ onMounted(() => {
 });
 
 const clear = () => {
+  page.value = 1
   photos.value = []
+  searchResult.value = ''
   totalResults.value = 0
 }
 
@@ -73,6 +76,21 @@ const search = async () => {
   loadNewPage()
 }
 
+const importPhoto = async (photo: any) => {
+  if (isProxy(photo)) {
+    parent.postMessage(
+      {
+        type: 'import-photo',
+        data: {
+          photo: toRaw(photo),
+          size: size.value
+        },
+      },
+      "*"
+    );
+  }
+}
+
 const searchMore = async () => {
   loadNewPage()
 }
@@ -81,14 +99,18 @@ const searchMore = async () => {
 <template>
   <main :data-theme="theme()" class="wrapper">
     <div class="header">
-      <p class="title-m mb">Image Lookup</p>
+      <p class="title-m mb">
+        Image Lookup
+      </p>
       
       <p class="body-s mb">
         Photos provided by <a href="https://pexels.com" target="_blank">Pexels</a>
       </p>
 
       <div class="form-group" style="margin-bottom: 8px;">
-        <label class="select-label-hidden" for="size-select">Which is your favorite animal?</label>
+        <label class="select-label-hidden" for="size-select">
+          Select image size
+        </label>
         <select class="select" id="size-select" v-model="size">
           <option disabled>Select image size</option>
           <option v-for="option of sizeOptions" :value="option.key" :key="option.key">
@@ -121,26 +143,29 @@ const searchMore = async () => {
         Search...
       </button>
 
-      <p
-        v-if="photos.length > 0"
-        class="mb"
+      <span
+        v-if="searchResult != ''"
       >
-        Results for "{{ searchResult }}" ({{ totalResults }} results)
-      </p>
-
-      <p
-        v-if="photos.length > 0"
-        class="caption"
-      >
-        Right click an image to copy it and paste it into Penpot
-      </p>
+        <p
+          v-if="photos.length > 0"
+        >
+          Results for "{{ searchResult }}" ({{ totalResults }} {{ totalResults === 1 ? 'result' : 'results' }})
+        </p>
+        <p
+          v-else
+        >
+          No results found for "{{ searchResult }}"
+        </p>
+      </span>      
     </div>
 
     <div class="content">
-      <div class="images-grid">
+      <div class="images-grid mt">
         <div v-for="photo in photos" :key="photo.id">
-          <div class="image-container">
-            <!-- <img :src="photo.src.medium" :alt="photo.alt" class="cover-image"><br> -->
+          <div
+            class="image-container"
+            :style="{ 'background-color': photo.avg_color }"
+          >
             <img
               :src="photo.src[size]"
               :alt="photo.alt"
@@ -149,24 +174,27 @@ const searchMore = async () => {
             <br>
           </div>
           <p class="body-s twolines">
-            <a :href="photo.url">Photo</a>
+            <a :href="photo.url" target="_blank">Photo</a>
             by
 
-            <a :href="photo.photographer_url">
-              {{ photo.photographer + '\n' }}
+            <a :href="photo.photographer_url" target="_blank">
+              {{ photo.photographer }}
             </a> 
           </p>
-          <!-- <button
-            @click="copyImage(photo)"
+          <button
+            type="button"
             data-appearance="secondary"
-            class="mt mb w-full"
+            @click="importPhoto(photo)"
+            class="mb w-full"
+            :disabled="searchInput == ''"
           >
-            COPY IMAGE
-          </button> -->
+            <svg style="fill: var(--da-tertiary);;" class="mr" width="12" height="12" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. --><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 242.7-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7 288 32zM64 352c-35.3 0-64 28.7-64 64l0 32c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-32c0-35.3-28.7-64-64-64l-101.5 0-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352 64 352zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48z"/></svg>
+            Import Image
+          </button>
         </div>
       </div>
       <button
-        v-if="photos.length > 0"
+        v-if="photos.length > 0 && photos.length < totalResults"
         @click="searchMore"
         data-appearance="secondary"
         class="mb mt w-full"
@@ -201,6 +229,12 @@ const searchMore = async () => {
 .mt {
   margin-top: 8px;
 }
+.mr {
+  margin-right: 8px;
+}
+.ml {
+  margin-left: 8px;
+}
 .w-full {
   width: 100%;
 }
@@ -224,6 +258,6 @@ const searchMore = async () => {
 }
 .twolines {
   line-height: 1.5;
-  min-height: 2em;
+  min-height: 3.1em;
 }
 </style>
